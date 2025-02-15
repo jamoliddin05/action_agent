@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  llm_service:
+    build: ./llm_service
+    ports:
+      - "9000:8000"
+    volumes:
+      - ./llm_service/:/app/
+    depends_on:
+      - mock_server
+
+  mock_server:
+    build: ./mock_server
+    environment:
+      - ALLOW_EXEC=true
+    volumes:
+      - ./mock_server/:/server/

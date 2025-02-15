@@ -1,0 +1,9 @@
+vector_db
+db_data
+.venv
+__pycache__/
+*.pyc
+.idea
+.DS_Store
+*.log
+.env
