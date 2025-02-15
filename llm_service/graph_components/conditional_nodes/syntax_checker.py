@@ -35,22 +35,29 @@ COMMAND_SYNTAX = """
 - **Nmap**: `nmap [-options] <target>`
 """
 
-# System Prompt (Fixed)
 system = f"""You are an expert at verifying Linux commands for security tools.
-You will determine whether the command correctly matches the user's intent and adheres to the provided feedback messages.
+Your task is to determine whether the generated command:
+- **Correctly matches the user's intent** based on their question.
+- **Includes all necessary tools and flags** to fulfill the request.
+- **Adheres to feedback messages** if any are provided.
 
 ### Steps:
-1. **Compare the command** to the correct syntax for the relevant tool:
+1. **Analyze the user's question** to determine what actions are required.
+2. **Compare the command** to the correct syntax for the relevant tools:
 {COMMAND_SYNTAX}
-2. **If the command is incorrect**, specify exactly what is wrong:
-   - Suggest the correct flag(s) or arguments.
+3. **Ensure all parts of the user's intent are fulfilled**:
+   - If the user asks for multiple tasks (e.g., scanning ports and finding subdomains), check that the command includes the necessary tools (`nmap`, `sublist3r`, etc.).
+   - If a required tool is missing, the command is incorrect.
+4. **If the command is incorrect**, provide specific feedback:
+   - Suggest the correct tools, flags, or arguments.
    - Provide an example correction.
-3. **If the command is correct**, return an empty feedback string.
+5. **If the command is correct**, return an empty feedback string.
 
 ### Response Format:
 - If incorrect: Explain the issue and provide the corrected command.
 - If correct: Return an empty string.
 """
+
 
 # LangChain prompt template
 matcher_prompt = ChatPromptTemplate.from_messages(

@@ -6,58 +6,65 @@ from pydantic import BaseModel, Field
 
 # Data model
 class CommandQuery(BaseModel):
-    """Route a user query to the most relevant datasource."""
+    """Determines if a generated command matches the user’s intent and execution feedback."""
 
     matches_user_input: Literal["yes", "no"] = Field(
         ...,
-        description="Given a user question, a generated linux command, list of feedbacks, and command execution output, determine if the command correctly matches the user's intent and adheres to the provided feedback.",
+        description="Determine if the generated Linux command correctly follows the user's intent and past feedback.",
     )
 
     feedback: str = Field(
-        description="""
-        Given a user question, a generated linux command, a list of feedback messages, and the command execution output, provide specific feedback on necessary improvements.
-
-        - If a flag or argument is incorrect or missing, suggest the exact correction.
-        - If the command structure is wrong, provide the corrected syntax.
-        - If additional context is needed, explain briefly.
-        - If the command is correct, return an empty string.
-        """,
+        description="Provide necessary corrections if the command is incorrect. If correct, return an empty string.",
     )
 
 
-# Correct Command Syntax Reference (escaped as a string)
-COMMAND_SYNTAX = """
-- **Sublist3r**: `sublist3r -d <domain> [-o <output_file>]`
-- **Nmap**: `nmap [-options] <target>`
-"""
+# Standard Command Syntax Reference
+COMMAND_SYNTAX = {
+    "Sublist3r": "sublist3r -d <domain> [-o <output_file>]",
+    "Nmap": "nmap [-options] <target>",
+}
 
-# System Prompt (Fixed)
-system = f"""You are an expert at verifying Linux commands for security tools.
-You will determine whether the command correctly matches the user's intent and adheres to the provided feedback messages.
+# Convert syntax reference to formatted text
+COMMAND_SYNTAX_TEXT = "\n".join(f"- **{tool}**: `{syntax}`" for tool, syntax in COMMAND_SYNTAX.items())
+
+# System Prompt (Optimized)
+system_prompt = f"""You are an expert in Linux security commands.
+Your task is to verify that a given command:
+- **Matches the user’s intent**.
+- **Includes necessary tools and flags**.
+- **Corrects mistakes based on previous feedback and execution output**.
 
 ### Steps:
-1. **Compare the command** to the correct syntax for the relevant tool:
-{COMMAND_SYNTAX}
-2. **If the command is incorrect**, specify exactly what is wrong:
-   - Suggest the correct flag(s) or arguments.
-   - Provide an example correction.
-3. **If the command is correct**, return an empty feedback string.
+1. **Analyze the user's question** to determine intent.
+2. **Compare the command** to the correct syntax:
+{COMMAND_SYNTAX_TEXT}
+3. **Check command execution output**:
+   - If errors suggest a missing flag or incorrect syntax, identify the issue.
+   - If errors indicate a different tool is needed, suggest an alternative command.
+4. **Provide specific corrections**:
+   - If flags/arguments are wrong, specify the correct ones.
+   - If additional context is needed, explain briefly.
+5. **If correct**, return an empty feedback string.
 
 ### Response Format:
-- If incorrect: Explain the issue and provide the corrected command.
-- If correct: Return an empty string.
+- **If incorrect**: Explain the issue and suggest the correct command.
+- **If correct**: Return an empty string.
 """
 
 # LangChain prompt template
 matcher_prompt = ChatPromptTemplate.from_messages(
     [
-        ("system", system),
+        ("system", system_prompt),
         ("human",
-         "User question: {question}\nFeedback:\n{feedback_list}\nGenerated command:\n{generated_command}\nCommand output:\n{command_output}"),
+         "User question: {question}\n"
+         "Previous Feedback:\n{feedback_list}\n"
+         "Generated Command:\n{generated_command}\n"
+         "Command Execution Output:\n{command_output}"),
     ]
 )
 
 
-# Chain
+# Optimized chain function
 def get_matcher(llm: ChatOpenAI):
+    """Returns an LLM chain that validates and corrects generated Linux commands."""
     return matcher_prompt | llm.with_structured_output(CommandQuery)

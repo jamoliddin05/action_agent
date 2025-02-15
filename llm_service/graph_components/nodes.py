@@ -35,7 +35,7 @@ def generate_command(state: GraphState) -> GraphState:
         }
     )
 
-    return {"input": user_input, "feedbacks": state["feedbacks"], "generated_command": generated_command}
+    return {"generated_command": generated_command}
 
 
 def validate_syntax(state: GraphState) -> GraphState:
@@ -47,9 +47,7 @@ def validate_syntax(state: GraphState) -> GraphState:
     })
 
     return {
-        "input": state["input"],
-        "generated_command": state["generated_command"],
-        "feedbacks": state["feedbacks"] + [validation.feedback],
+        "feedbacks": state["feedbacks"] + ([validation.feedback] if validation.feedback else []),
         "command_matches_input": validation.matches_user_input,
     }
 
@@ -66,11 +64,39 @@ def execute(state: GraphState) -> GraphState:
     response = execute_command(generated_command)
 
     return {
-        "input": state["input"],
-        "generated_command": generated_command,
         "output": response.get("output"),
-        "command_matches_input": state["command_matches_input"],
-        "feedbacks": state["feedbacks"],
     }
+
+def validate_output(state: GraphState) -> GraphState:
+    print("Validating output")
+    validation = get_matcher(llm).invoke({
+        "question": state["input"],
+        "feedback_list": state["feedbacks"],
+        "generated_command": state["generated_command"],
+        "command_output": state["output"],
+    })
+
+    return {
+        "feedbacks": state["feedbacks"] + ([validation.feedback] if validation.feedback else []),
+        "output_matches_input": validation.matches_user_input,
+    }
+
+def should_pass_output_validation(state: GraphState):
+    if state["output_matches_input"] == 'no':
+        print("Regenerating")
+        return "command_generator"
+    return "wrapper"
+
+def wrap_response(state: GraphState) -> GraphState:
+    print("Wrap response")
+    response = get_summarizer(llm).invoke({
+        "question": state["input"],
+        "feedback_list": state["feedbacks"],
+        "generated_command": state["generated_command"],
+        "command_output": state["output"],
+    })
+
+    return {"response": response}
+
 
 

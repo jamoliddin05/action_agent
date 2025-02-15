@@ -2,14 +2,24 @@ import os
 
 from langgraph.graph import END, StateGraph, START
 
-from graph_components.nodes import should_answer, validate_syntax, generate_command, should_pass_validation, execute
+from graph_components.nodes import (
+    should_answer,
+    validate_syntax,
+    generate_command,
+    should_pass_validation,
+    execute,
+    validate_output,
+    should_pass_output_validation,
+    wrap_response
+)
 from graph_components.states.graph_state import GraphState
-
 
 workflow = StateGraph(GraphState)
 workflow.add_node("command_generator", generate_command)
 workflow.add_node("validate_syntax", validate_syntax)
+workflow.add_node("validate_output", validate_output)
 workflow.add_node("execute", execute)
+workflow.add_node("wrapper", wrap_response)
 
 workflow.add_conditional_edges(
     START,
@@ -31,7 +41,16 @@ workflow.add_conditional_edges(
     }
 )
 
-workflow.add_edge("execute", END)
+workflow.add_edge("execute", "validate_output")
+workflow.add_conditional_edges(
+    "validate_output",
+    should_pass_output_validation,
+    {
+        "command_generator": "command_generator",
+        "wrapper": "wrapper"
+    }
+)
+workflow.add_edge("wrapper", END)
 
 app = workflow.compile()
 
@@ -43,17 +62,11 @@ app = workflow.compile()
 #
 # print(f"Graph saved as 'my_graph.png' in {os.getcwd()}")
 
-from pprint import pprint
 
-# # Run
-# state = GraphState(input="What player at the Bears expected to draft first in the 2024 NFL draft?")
-#
-# for output in app.stream(state):
-#     print(output['input'])
-
-inputs = {
-    "input": "Scan google using nmap",
-    "feedbacks": []
-}
-for output in app.stream(inputs):
-    print(output)
+# inputs = {
+#     # "input": "YOU MUST USE NMAP TO SCAN GOOGLE AND THEN FIND ITS SUBDOMAINS.",
+#     "input": "Use nmap for google and find its subdomains",
+#     "feedbacks": []
+# }
+# for output in app.stream(inputs):
+#     print(output)
