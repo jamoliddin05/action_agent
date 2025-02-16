@@ -52,7 +52,7 @@ workflow.add_conditional_edges(
 )
 workflow.add_edge("wrapper", END)
 
-app = workflow.compile()
+llm_agent = workflow.compile()
 
 # from IPython.display import display, Image
 #
