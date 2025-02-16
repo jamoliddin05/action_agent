@@ -1,4 +1,9 @@
 from dotenv import load_dotenv
+import requests
+import sys
+import aiohttp
+import asyncio
+import shutil
 
 from langchain_openai import ChatOpenAI
 
@@ -15,17 +20,26 @@ from graph_components.actions.server_api import execute_command
 
 load_dotenv()
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+# llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
+from langchain_deepseek import ChatDeepSeek
+llm = ChatDeepSeek(model='deepseek-chat', temperature=0)
+
+def print_title(title: str):
+    """Prints a single-line title centered within a full-width border."""
+    terminal_width = shutil.get_terminal_size((80, 20)).columns  # Default width fallback: 80
+    title = f" {title} "
+
+    print(title.center(terminal_width, "-"))
 
 def should_answer(state: GraphState) -> GraphState:
-    print("Answer or not")
+    print_title("ANSWER OR NOT")
     user_input = state["input"]
     return get_question_router(llm).invoke({"question": user_input}).datasource
 
 
 def generate_command(state: GraphState) -> GraphState:
-    print("Generating command")
+    print_title("GENERATING COMMAND")
     user_input = state["input"]
     feedbacks = state["feedbacks"]
     generated_command = get_generator(llm).invoke(
@@ -39,7 +53,7 @@ def generate_command(state: GraphState) -> GraphState:
 
 
 def validate_syntax(state: GraphState) -> GraphState:
-    print("Validating syntax")
+    print_title("VALIDATING SYNTAX")
     validation = get_syntax_checker(llm).invoke({
         "question": state["input"],
         "feedback_list": state["feedbacks"],
@@ -52,23 +66,37 @@ def validate_syntax(state: GraphState) -> GraphState:
     }
 
 def should_pass_validation(state: GraphState):
+    print_title("SHOULD PASS SYNTAX VALIDATION")
     if state["command_matches_input"] == 'no':
         print("Regenerating")
         return "command_generator"
 
     return "execute"
 
-def execute(state: GraphState) -> GraphState:
-    print("Executing command")
-    generated_command = state["generated_command"]
-    response = execute_command(generated_command)
 
-    return {
-        "output": response.get("output"),
-    }
+def execute(state: GraphState) -> GraphState:
+    print_title("EXECUTING COMMAND")
+    generated_command = state["generated_command"]
+
+    url = "http://mock_server:5000/execute"  # Replace with actual service URL
+
+    collected_output = []
+
+    with requests.post(url, json={"command": generated_command}, stream=True) as response:
+        for line in response.iter_lines():
+            if line:
+                decoded_line = line.decode("utf-8")
+
+                # Print output immediately for real-time updates
+                print(decoded_line, flush=True)
+
+                # Collect for returning full response
+                collected_output.append(decoded_line)
+
+    return {"output": "\n".join(collected_output)}
 
 def validate_output(state: GraphState) -> GraphState:
-    print("Validating output")
+    print_title("VALIDATING OUTPUT")
     validation = get_matcher(llm).invoke({
         "question": state["input"],
         "feedback_list": state["feedbacks"],
@@ -82,13 +110,14 @@ def validate_output(state: GraphState) -> GraphState:
     }
 
 def should_pass_output_validation(state: GraphState):
+    print_title("SHOULD PASS OUTPUT VALIDATION")
     if state["output_matches_input"] == 'no':
         print("Regenerating")
         return "command_generator"
     return "wrapper"
 
 def wrap_response(state: GraphState) -> GraphState:
-    print("Wrap response")
+    print_title("WRAPPING RESPONSE")
     response = get_summarizer(llm).invoke({
         "question": state["input"],
         "feedback_list": state["feedbacks"],

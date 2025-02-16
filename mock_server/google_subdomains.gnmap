@@ -1,0 +1,4 @@
+# Nmap 7.93 scan initiated Sun Feb 16 09:19:42 2025 as: nmap --script dns-brute -oA google_subdomains google.com
+Host: 142.250.74.174 (arn11s12-in-f14.1e100.net)	Status: Up
+Host: 142.250.74.174 (arn11s12-in-f14.1e100.net)	Ports: 80/open/tcp//http///, 135/closed/tcp//msrpc///, 139/closed/tcp//netbios-ssn///, 443/open/tcp//https///, 445/closed/tcp//microsoft-ds///	Ignored State: filtered (995)
+# Nmap done at Sun Feb 16 09:20:48 2025 -- 1 IP address (1 host up) scanned in 66.29 seconds

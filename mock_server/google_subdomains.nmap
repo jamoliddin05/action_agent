@@ -1,0 +1,86 @@
+# Nmap 7.93 scan initiated Sun Feb 16 09:19:42 2025 as: nmap --script dns-brute -oA google_subdomains google.com
+Nmap scan report for google.com (142.250.74.174)
+Host is up (0.018s latency).
+Other addresses for google.com (not scanned): 2a00:1450:400f:805::200e
+rDNS record for 142.250.74.174: arn11s12-in-f14.1e100.net
+Not shown: 995 filtered tcp ports (no-response)
+PORT    STATE  SERVICE
+80/tcp  open   http
+135/tcp closed msrpc
+139/tcp closed netbios-ssn
+443/tcp open   https
+445/tcp closed microsoft-ds
+
+Host script results:
+| dns-brute: 
+|   DNS Brute-force hostnames: 
+|     admin.google.com - 142.250.74.78
+|     admin.google.com - 2a00:1450:400f:802::200e
+|     ads.google.com - 216.58.211.14
+|     ads.google.com - 2a00:1450:400f:80d::200e
+|     alerts.google.com - 142.250.74.174
+|     alerts.google.com - 2a00:1450:400f:805::200e
+|     news.google.com - 142.250.74.142
+|     news.google.com - 2a00:1450:400f:804::200e
+|     ap.google.com - 142.250.74.36
+|     ap.google.com - 2a00:1450:400f:801::2004
+|     ns.google.com - 216.239.32.10
+|     ns1.google.com - 216.239.32.10
+|     ns1.google.com - 2001:4860:4802:32::a
+|     ns2.google.com - 216.239.34.10
+|     ns2.google.com - 2001:4860:4802:34::a
+|     ns3.google.com - 216.239.36.10
+|     ns3.google.com - 2001:4860:4802:36::a
+|     id.google.com - 216.58.207.195
+|     id.google.com - 2404:6800:4007:80f::2003
+|     images.google.com - 142.250.74.174
+|     apps.google.com - 142.250.74.174
+|     images.google.com - 2a00:1450:400f:805::200e
+|     apps.google.com - 2a00:1450:400f:805::200e
+|     dns.google.com - 8.8.4.4
+|     dns.google.com - 8.8.8.8
+|     dns.google.com - 2001:4860:4860::8844
+|     dns.google.com - 2001:4860:4860::8888
+|     upload.google.com - 216.58.211.15
+|     upload.google.com - 2a00:1450:400f:80d::200f
+|     download.google.com - 142.250.74.36
+|     download.google.com - 2a00:1450:400f:801::2004
+|     blog.google.com - 142.250.74.73
+|     blog.google.com - 2a00:1450:400f:802::2009
+|     vpn.google.com - 64.9.224.68
+|     vpn.google.com - 64.9.224.69
+|     vpn.google.com - 64.9.224.70
+|     chat.google.com - 142.250.74.110
+|     chat.google.com - 2a00:1450:400f:803::200e
+|     web.google.com - 142.250.74.174
+|     web.google.com - 2a00:1450:400f:805::200e
+|     ipv6.google.com - 2a00:1450:400f:802::200e
+|     ldap.google.com - 216.239.32.58
+|     ldap.google.com - 2001:4860:4802:32::3a
+|     corp.google.com - 64.233.164.129
+|     corp.google.com - 2a00:1450:4010:c07::81
+|     local.google.com - 142.250.74.78
+|     local.google.com - 2a00:1450:400f:804::200e
+|     shop.google.com - 173.194.220.92
+|     shop.google.com - 2a00:1450:4010:c09::5c
+|     mail.google.com - 142.250.74.69
+|     mail.google.com - 2a00:1450:400f:802::2005
+|     smtp.google.com - 108.177.14.26
+|     smtp.google.com - 108.177.14.27
+|     smtp.google.com - 209.85.233.26
+|     smtp.google.com - 209.85.233.27
+|     smtp.google.com - 74.125.131.27
+|     smtp.google.com - 2a00:1450:4010:c03::1a
+|     smtp.google.com - 2a00:1450:4010:c03::1b
+|     smtp.google.com - 2a00:1450:4010:c0f::1a
+|     smtp.google.com - 2a00:1450:4010:c0f::1b
+|     www.google.com - 142.250.74.132
+|     www.google.com - 2a00:1450:400f:804::2004
+|     help.google.com - 142.250.74.174
+|     help.google.com - 2a00:1450:400f:805::200e
+|     home.google.com - 216.58.207.206
+|     home.google.com - 2a00:1450:400f:805::200e
+|     mobile.google.com - 142.250.74.171
+|_    mobile.google.com - 2a00:1450:400f:805::200b
+
+# Nmap done at Sun Feb 16 09:20:48 2025 -- 1 IP address (1 host up) scanned in 66.29 seconds

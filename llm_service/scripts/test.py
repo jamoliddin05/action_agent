@@ -1,27 +1,22 @@
-import requests
+from dotenv import load_dotenv
 
-MOCK_SERVER_URL = "http://mock_server:5000"
+# load_dotenv()
 
+from llm_app import llm_agent
 
-def execute_command(command: str) -> dict:
-    """
-    Sends a Linux command to the mock server for execution.
+inputs = {
+    # "input": "YOU MUST USE NMAP TO SCAN GOOGLE AND THEN FIND ITS SUBDOMAINS.",
+    "input": "What are the sub domains of google?",
+    "feedbacks": []
+}
 
-    Args:
-        command (str): The Linux command to be executed.
+from pprint import pprint
 
-    Returns:
-        dict: The response JSON if successful, or an error message.
-    """
-    payload = {"command": command}  # Wrap command in a JSON object
-
-    try:
-        response = requests.post(f"{MOCK_SERVER_URL}/execute", json=payload)
-        response.raise_for_status()  # Raise an error for 4xx and 5xx responses
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        return {"error": str(e)}
-
-# Example usage:
-# result = execute_command("nmap -p 80,443 example.com")
-# print(result)
+for output in llm_agent.stream(inputs):
+    for key, value in output.items():
+        # pprint(f"Node '{key}':")
+        # Optional: print full state at each node
+        if "response" in value.keys():
+            print(value['response'])
+        else:
+            pprint(value, indent=2, width=80, depth=None)

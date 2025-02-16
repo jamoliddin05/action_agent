@@ -1,17 +1,33 @@
 from fastapi import FastAPI, HTTPException, Body
+from fastapi.responses import StreamingResponse
+import asyncio
 import subprocess
 
 app = FastAPI()
 
+
+async def stream_command_output(command: str):
+    """Run the command and stream its output in real-time."""
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+
+    async def generator():
+        async for line in process.stdout:
+            yield line.decode()
+        async for line in process.stderr:
+            yield line.decode()
+        await process.wait()
+
+    return StreamingResponse(generator(), media_type="text/plain")
+
+
 @app.post("/execute")
 async def execute_command(params: dict = Body()):
     command = params.get("command")
-    if command is None:
+    if not command:
         raise HTTPException(status_code=422, detail="No command specified")
 
-    try:
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        output = result.stdout if result.returncode == 0 else result.stderr  # Prioritize stderr on failure
-        return {"output": output.strip(), "return_code": result.returncode}
-    except Exception as e:
-        return {"output": str(e), "return_code": 1}  # Return errors under "output"
+    return await stream_command_output(command)
