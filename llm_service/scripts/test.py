@@ -6,7 +6,7 @@ from llm_app import llm_agent
 
 inputs = {
     # "input": "YOU MUST USE NMAP TO SCAN GOOGLE AND THEN FIND ITS SUBDOMAINS.",
-    "input": "What are the sub domains of google?",
+    "input": "Scan google using nmap and find its subdomains",
     "feedbacks": []
 }
 
